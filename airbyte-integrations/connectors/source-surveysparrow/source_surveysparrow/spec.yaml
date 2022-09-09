@@ -1,0 +1,12 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: SurveySparrow Spec
+  type: object
+  required:
+    - access_token
+  properties:
+    access_token:
+      type: string
+      description: An access token generated from Survey Sparrow used for authentication for API calls.
+      airbyte_secret: true
