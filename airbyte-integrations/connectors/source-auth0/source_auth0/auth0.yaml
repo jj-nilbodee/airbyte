@@ -1,0 +1,55 @@
+version: "0.1.1"
+
+definitions:
+  page_size: 1000
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "{{ config['base_url'] }}/api/v2"
+    http_method: "GET"
+    authenticator:
+      type: "OAuthAuthenticator"
+      token_refresh_endpoint: "{{ config['base_url'] }}/oauth/token"
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: ""
+      refresh_request_body:
+        audience: "{{ config['audience'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: "*ref(definitions.page_size)"
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+      url_base: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_auth0/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "id"
+      path: "/users"
+
+
+streams:
+  - "*ref(definitions.users_stream)"
+
+check:
+  stream_names:
+    - "users"
